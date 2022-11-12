@@ -1,5 +1,7 @@
 # Beehive Utilities Revived
-A few customisation options for beehives including amount of honey a hive can hold, time it takes to generate the honey and disabling the proximity build restrictions even as the Biome bees are happy in
+A few customisation options for beehives including amount of honey a hive can hold, time it takes to generate the honey and disabling the proximity build restrictions even as the Biome bees are happy in.
+
+This is just a revive/rewrite of Smallo's BeehiveUtilits to make this mod work with current Valheim Version again; the deprecated Version blocked connecting to a servicer with a black screen.
 
 ## Manual Installation
 To install this mod, you need to have BepInEx. After installing BepInEx, extract BeehiveUtilities.dll into games install **"\Valheim\BepInEx\plugins"**
