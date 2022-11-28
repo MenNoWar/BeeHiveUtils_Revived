@@ -3,11 +3,13 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Reflection;
+using Jotunn.Managers;
 using UnityEngine;
 
 namespace BeehiveUtilities
 {
-    [BepInPlugin("mennowar.mods.beehiveutilities_revived", "Beehive Utilities Revived", "1.0.1")]
+    [BepInPlugin("mennowar.mods.beehiveutilities_revived", "Beehive Utilities Revived", "1.0.2")]
+    [BepInDependency(Jotunn.Main.ModGuid)]
     [HarmonyPatch]
     class BeehiveUtilitiesPlugin : BaseUnityPlugin
     {
@@ -18,20 +20,20 @@ namespace BeehiveUtilities
         private static ConfigEntry<int> maxHoney;
         private static ConfigEntry<double> minsCreation;
 
-        private static int creationTimeInSeconds = 0;
+        private static int creationTimeInSeconds;
 
-        private static bool writeDebugOutput = false;
+        private static ConfigEntry<bool> writeDebugOutput;
 
-        private static ManualLogSource log = null;
+        private static ManualLogSource log;
 
         public static void Debug(string value)
         {
 
-            if (writeDebugOutput)
+            if (writeDebugOutput.Value)
             {
                 if (log == null)
                 {
-                    log = BepInEx.Logging.Logger.CreateLogSource("Beehive");
+                    log = BepInEx.Logging.Logger.CreateLogSource("Beehive UR");
                 }
 
                 if (log != null)
@@ -41,37 +43,57 @@ namespace BeehiveUtilities
             }
         }
 
+        private static void WriteInfo()
+        {
+            Debug($"Disable Proximity Check: {disableDistanceCheck.Value}");
+            Debug($"Max Honey: {maxHoney.Value}");
+            Debug($"Minutes Per Creation: {minsCreation.Value}");
+            Debug($"Remove Biome Check: {removeBiomeCheck.Value}");
+            Debug($"Spawn Honey In Front: {honeySpawnInFront.Value}");
+        }
+
         void Awake()
         {
-            enableMod = Config.Bind("1 - Global", "Enable Mod", true, "Enable or disable this mod");
+            Config.SaveOnConfigSet = true;
+
+            enableMod = Config.Bind("1 - Global", "Enable Mod", true,
+                new ConfigDescription("Is this mod enabled?", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
             if (!enableMod.Value) return;
 
-            writeDebugOutput = Config.Bind("1 - Global", "Enable Debug", false, "Enable or disable Debug Output").Value;
-            Debug("Beehive Awake called");
 
-            Debug("Beehive Utilities Config:");
+            writeDebugOutput = Config.Bind("1 - Global", "Enable Debug", false,
+                new ConfigDescription("Write additional Debug Output", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
-            disableDistanceCheck = Config.Bind("2 - General", "Disable Proximity Check", true, "Disables the \"Bees need more space\" check");
-            Debug($"Disable Proximity Check: {disableDistanceCheck.Value}");
-            
-            maxHoney = Config.Bind("2 - General", "Max Honey", 20, "The maximum amount of honey a beehive can generate (default is 10)");
-            Debug($"Max Honey: {maxHoney.Value}");
+            disableDistanceCheck = Config.Bind("2 - General", "Disable Proximity Check", true,
+                new ConfigDescription("Disable the \"Bees need more space\" check", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
 
-            minsCreation = Config.Bind("2 - General", "Minutes Per Creation", 20.0, "The amount of minutes it takes to generate 1 piece of honey (default is 20)");
-            Debug($"Minutes Per Creation: {minsCreation.Value}");
-            
-            removeBiomeCheck = Config.Bind("2 - General", "Remove Biome Check", true, "Allows beehives to work in any biome");
-            Debug($"Remove Biome Check: {removeBiomeCheck.Value}");
-            
-            honeySpawnInFront = Config.Bind("2 - General", "Spawn Honey In Front", true, "Spawns the honey in front of the hive instead of on top of it. Here is a picture to show which way is the front of the hive, it's the side where the thatch overlaps from the sides on top. https://i.imgur.com/zK5FT47.png");
-            Debug($"Spawn Honey In Front: {honeySpawnInFront.Value}");
+            maxHoney = Config.Bind("2 - General", "Max Honey", 10,
+                new ConfigDescription("The maximum amount of honey a beehive can generate (game default is 10)", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+            minsCreation = Config.Bind("2 - General", "Minutes Per Creation", 20.0,
+            new ConfigDescription("The amount of minutes it takes to generate 1 piece of honey (default is 20)", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+            removeBiomeCheck = Config.Bind("2 - General", "Remove Biome Check", true,
+                new ConfigDescription("Allow the beehives to work in any Biome", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+            honeySpawnInFront = Config.Bind("2 - General", "Spawn Honey In Front", true,
+                new ConfigDescription("Spawns the honey in front of the hive instead of on top of it. Here is a picture to show which way is the front of the hive, it's the side where the thatch overlaps from the sides on top.", null, new ConfigurationManagerAttributes { IsAdminOnly = true }));
+
+            WriteInfo();
 
             creationTimeInSeconds = (int)(minsCreation.Value * 60);
 
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
+
+            SynchronizationManager.OnConfigurationSynchronized += SynchronizationManager_OnConfigurationSynchronized;
         }
 
-        // private static string LocaliseString(string text) { return Localization.instance.Localize(text); }
+        private void SynchronizationManager_OnConfigurationSynchronized(object sender, Jotunn.Utils.ConfigurationSynchronizationEventArgs e)
+        {
+            creationTimeInSeconds = (int)(minsCreation.Value * 60);
+            Debug(e.InitialSynchronization ? "Getting Initial Config" : "Config has been updated");
+        }
 
         private static void SetBeeStats(Beehive __instance)
         {
