@@ -22,3 +22,10 @@ Before the config file is generated, you must run the game with the mod installe
 
 ## Thanks
 Thanks go to smallo for the original mod ["BeehiveUtilies"](https://valheim.thunderstore.io/package/Smallo/BeehiveUtilities/)
+
+## Update
+#### 1.0.2
+ added Jotunn as a requirement, because not the configuration is shared between client/server
+
+#### 1.0.1
+Initial Release with updated dependencies
