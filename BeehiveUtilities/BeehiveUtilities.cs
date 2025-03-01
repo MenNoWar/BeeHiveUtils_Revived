@@ -9,7 +9,7 @@ using UnityEngine;
 namespace BeehiveUtilities
 {
     [BepInPlugin("mennowar.mods.beehiveutilities_revived", "Beehive Utilities Revived", "1.0.2")]
-    [BepInDependency(Jotunn.Main.ModGuid)]
+    [BepInDependency(Jotunn.Main.ModGuid, "2.23.2")]
     [HarmonyPatch]
     class BeehiveUtilitiesPlugin : BaseUnityPlugin
     {
@@ -83,7 +83,7 @@ namespace BeehiveUtilities
             WriteInfo();
 
             creationTimeInSeconds = (int)(minsCreation.Value * 60);
-
+            
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
 
             SynchronizationManager.OnConfigurationSynchronized += SynchronizationManager_OnConfigurationSynchronized;
@@ -101,7 +101,7 @@ namespace BeehiveUtilities
                 return;
 
             Debug("-------- Setting BeeHive Status ----------");
-            bool active = !EnvMan.instance.IsNight();
+            bool active = !EnvMan.IsNight();
             __instance.m_beeEffect.SetActive(active); // no effect at night
             Debug($"Bee-Effect isActive: {active}");
 
@@ -133,7 +133,15 @@ namespace BeehiveUtilities
 
             if (removeBiomeCheck.Value)
             {
-                __instance.m_biome = Heightmap.Biome.AshLands | Heightmap.Biome.BiomesMax | Heightmap.Biome.BlackForest | Heightmap.Biome.DeepNorth | Heightmap.Biome.Meadows | Heightmap.Biome.Mistlands | Heightmap.Biome.Mountain | Heightmap.Biome.Plains | Heightmap.Biome.AshLands | Heightmap.Biome.Swamp;
+                __instance.m_biome =
+                    Heightmap.Biome.Meadows |
+                        Heightmap.Biome.Swamp |
+                        Heightmap.Biome.Mountain |
+                        Heightmap.Biome.BlackForest |
+                        Heightmap.Biome.Plains |
+                        Heightmap.Biome.AshLands |
+                        Heightmap.Biome.DeepNorth |
+                        Heightmap.Biome.Mistlands;
                 Debug($"Biome set to everywhere: {__instance.m_biome}");
             }
             else

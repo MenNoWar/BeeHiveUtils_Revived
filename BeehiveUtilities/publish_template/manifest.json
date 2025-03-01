@@ -1,7 +1,10 @@
 {
     "name": "BeehiveUtils_Revived",
-    "version_number": "1.0.2",
+    "version_number": "1.0.3",
     "website_url": "https://github.com/MenNoWar/BeeHiveUtils_Revived",
     "description": "A few customisation options for beehives including amount of honey a hive can hold, time it takes to generate the honey and disabling the proximity build restrictions even as the Biome bees are happy in.",
-    "dependencies": [ "ValheimModding-Jotunn-2.9.0" ]
+  "dependencies": [
+      "denikson-BepInExPack_Valheim-5.4.2202",
+      "ValheimModding-Jotunn-2.23.2"
+  ]
 }
